@@ -3,6 +3,7 @@ import './App.css';
 import Sidebar from './components/Sidebar';
 import SummaryPage from './pages/SummaryPage';
 import RoutesPage from './pages/RoutesPage';
+import MapsPage from './pages/MapsPage';
 import PackagesPage from './pages/PackagesPage';
 import IncidentsPage from './pages/IncidentsPage';
 import DriversPage from './pages/DriversPage';
@@ -52,6 +53,7 @@ function App() {
     const pages = {
         summary: <SummaryPage monitoring={monitoring} />,
         routes: <RoutesPage onMonitoringChange={setMonitoring} />,
+        maps: <MapsPage />,
         packages: <PackagesPage />,
         incidents: <IncidentsPage />,
         drivers: <DriversPage />,

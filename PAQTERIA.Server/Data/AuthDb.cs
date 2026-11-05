@@ -11,7 +11,7 @@ public sealed class AuthDb(IConfiguration configuration)
     private readonly string _connectionString = configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("No se configuró ConnectionStrings:DefaultConnection.");
 
-    public async Task<AuthUserResponse?> ValidateAdminAsync(
+    public async Task<AuthUserResponse?> ValidateUserAsync(
         string email,
         string password,
         CancellationToken cancellationToken = default)
@@ -20,9 +20,11 @@ public sealed class AuthDb(IConfiguration configuration)
         await connection.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT TOP (1) id_usuario, nombre, email, password_hash
-            FROM dbo.USUARIOS
-            WHERE email = @email AND id_rol = 1;
+            SELECT TOP (1) u.id_usuario, u.nombre, u.email, u.password_hash,
+                   u.id_rol, r.nombre
+            FROM dbo.USUARIOS u
+            INNER JOIN dbo.ROLES r ON r.id_rol = u.id_rol
+            WHERE u.email = @email;
             """;
         command.Parameters.AddWithValue("@email", email);
 
@@ -32,7 +34,9 @@ public sealed class AuthDb(IConfiguration configuration)
         var storedHash = reader.GetString(3);
         if (!VerifyPassword(storedHash, password)) return null;
 
-        return new AuthUserResponse(reader.GetInt32(0), reader.GetString(1), reader.GetString(2));
+        var idRol = reader.GetInt32(4);
+        var rol = idRol == 1 ? "Admin" : reader.GetString(5);
+        return new AuthUserResponse(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), rol);
     }
 
     public async Task<UserOptionsResponse> GetUserOptionsAsync(CancellationToken cancellationToken = default)

@@ -1,6 +1,7 @@
 const navigationItems = [
     { id: 'summary', label: 'Resumen', icon: '▦' },
     { id: 'routes', label: 'Rutas', icon: '⌁' },
+    { id: 'maps', label: 'Mapa', icon: '⌖' },
     { id: 'packages', label: 'Paquetes', icon: '▣' },
     { id: 'incidents', label: 'Incidencias', icon: '⚑' },
     { id: 'drivers', label: 'Repartidores', icon: '♙' },

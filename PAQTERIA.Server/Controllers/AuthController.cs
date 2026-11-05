@@ -23,11 +23,11 @@ public sealed class AuthController(AuthDb authDb) : ControllerBase
             return BadRequest(new { message = "El correo y la contraseña son obligatorios." });
         }
 
-        var user = await authDb.ValidateAdminAsync(
+        var user = await authDb.ValidateUserAsync(
             request.Email.Trim(), request.Password, cancellationToken);
         if (user is null)
         {
-            return Unauthorized(new { message = "Las credenciales no son válidas o el usuario no es administrador." });
+            return Unauthorized(new { message = "Las credenciales no son válidas." });
         }
 
         var claims = new[]
@@ -35,7 +35,7 @@ public sealed class AuthController(AuthDb authDb) : ControllerBase
             new Claim(ClaimTypes.NameIdentifier, user.IdUsuario.ToString()),
             new Claim(ClaimTypes.Name, user.Nombre),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, "Admin")
+            new Claim(ClaimTypes.Role, user.Rol)
         };
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignInAsync(
@@ -51,7 +51,8 @@ public sealed class AuthController(AuthDb authDb) : ControllerBase
         => Ok(new AuthUserResponse(
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
             User.Identity?.Name ?? string.Empty,
-            User.FindFirstValue(ClaimTypes.Email) ?? string.Empty));
+            User.FindFirstValue(ClaimTypes.Email) ?? string.Empty,
+            User.FindFirstValue(ClaimTypes.Role) ?? string.Empty));
 
     [Authorize]
     [HttpPost("logout")]

@@ -12,6 +12,8 @@ public static class RouteRequestValidation
         if (request.IdPaquetes is null || request.IdPaquetes.Count == 0) return "Selecciona al menos un paquete.";
         if (request.IdPaquetes.Any(id => id <= 0)) return "La selección de paquetes no es válida.";
         if (request.IdPaquetes.Distinct().Count() != request.IdPaquetes.Count) return "No se puede repetir un paquete en la misma ruta.";
+        if (request.OrigenLatitud is null or < -90 or > 90 || request.OrigenLongitud is null or < -180 or > 180)
+            return "No se recibió una ubicación válida del repartidor.";
         return null;
     }
 }

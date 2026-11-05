@@ -18,6 +18,7 @@ builder.Services.AddSingleton<IncidentDb>();
 builder.Services.AddSingleton<DistributionCenterDb>();
 builder.Services.AddSingleton<RouteDb>();
 builder.Services.AddSingleton<AuthDb>();
+builder.Services.AddHttpClient<OsrmClient>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -44,6 +45,7 @@ var app = builder.Build();
 
 await app.Services.GetRequiredService<PackageDb>().InitializeAsync();
 await app.Services.GetRequiredService<DistributionCenterDb>().InitializeAsync();
+await app.Services.GetRequiredService<RouteDb>().InitializeAsync();
 
 app.UseDefaultFiles();
 app.MapStaticAssets();
@@ -67,4 +69,5 @@ app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
 
-admin @rumboenvios.comapp.Run();
+//admin @rumboenvios.comapp.Run();
+app.Run();

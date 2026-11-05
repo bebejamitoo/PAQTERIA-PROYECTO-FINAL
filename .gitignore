@@ -6,4 +6,7 @@ node_modules/
 **/node_modules/
 **/bin/
 **/obj/
+*.db
+*.db-shm
+*.db-wal
 

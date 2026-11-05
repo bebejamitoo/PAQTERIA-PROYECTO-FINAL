@@ -2,7 +2,7 @@ namespace PAQTERIA.Server.Models;
 
 public sealed record LoginRequest(string? Email, string? Password);
 
-public sealed record AuthUserResponse(int IdUsuario, string Nombre, string Email);
+public sealed record AuthUserResponse(int IdUsuario, string Nombre, string Email, string Rol);
 
 public sealed record UserManagementResponse(
     int IdUsuario,
