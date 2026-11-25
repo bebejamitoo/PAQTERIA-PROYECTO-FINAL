@@ -41,7 +41,19 @@ export default async function proxyApi(request, response) {
         if (origin.protocol !== 'https:' && !isLocalDevelopmentOrigin) {
             throw new Error('La API remota debe usar HTTPS.');
         }
-        upstream = new URL(request.url || '/api', origin);
+
+        const incoming = new URL(request.url || '/api/proxy', 'https://vercel.invalid');
+        const apiPath = incoming.searchParams.get('path')?.replace(/^\/+/, '');
+        if (!apiPath) {
+            response.status(400).json({ message: 'Falta la ruta de la API solicitada.' });
+            return;
+        }
+
+        upstream = new URL(`/api/${apiPath}`, origin);
+        incoming.searchParams.delete('path');
+        for (const [name, value] of incoming.searchParams) {
+            upstream.searchParams.append(name, value);
+        }
     } catch {
         response.status(500).json({
             message: 'La URL de la API configurada para este despliegue no es válida.',
