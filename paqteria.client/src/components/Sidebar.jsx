@@ -14,8 +14,7 @@ function Sidebar({ activeModule, onNavigate, packagesInRoute, user, onLogout }) 
     return (
         <aside className="sidebar">
             <div className="brand-block">
-                <span className="brand-name">RumboEnvíos</span>
-                <span className="brand-caption">CONTROL TOWER</span>
+                <img className="brand-logo sidebar-logo" src="/logo.png" alt="PaqTracker" />
             </div>
             <nav className="sidebar-nav" aria-label="Navegación principal">
                 <span className="nav-section-label">OPERACIÓN</span>

@@ -7,7 +7,7 @@ public sealed class Package
     public int IdCentroOrigen { get; init; }
     public string DireccionOrigen { get; init; } = string.Empty;
     public string DireccionDestino { get; init; } = string.Empty;
-    public string CoordenadasDestino { get; init; } = string.Empty;
+    public string? CoordenadasDestino { get; init; }
     public decimal PesoKg { get; init; }
     public string TamanoEtiqueta { get; init; } = string.Empty;
     public bool EsPrioritario { get; init; }

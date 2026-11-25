@@ -3,8 +3,19 @@ import EmptyState from '../components/EmptyState';
 import RouteMap from '../components/RouteMap';
 import { PageHeader } from './SummaryPage';
 
+function getHermosilloDate() {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Hermosillo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+    return `${values.year}-${values.month}-${values.day}`;
+}
+
 function RoutesPage({ onMonitoringChange }) {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getHermosilloDate();
     const [options, setOptions] = useState({ repartidores: [], unidades: [], paquetesDisponibles: [] });
     const [monitoring, setMonitoring] = useState({ turnos: [], paquetesEnRuta: 0, paradasPendientes: 0, incidenciasAbiertas: 0 });
     const [form, setForm] = useState({ idRepartidor: '', idUnidad: '', fechaTurno: today, tiempoEstimadoHoras: '8' });
@@ -97,7 +108,7 @@ function RoutesPage({ onMonitoringChange }) {
                     <label>Tiempo estimado (horas)<input name="tiempoEstimadoHoras" type="number" min="0.5" step="0.5" value={form.tiempoEstimadoHoras} onChange={handleChange} required /></label>
                 </div>
                 {options.unidades.length === 0 && <p className="form-hint">No hay unidades registradas en la tabla UNIDADES. Registra una unidad para poder crear turnos.</p>}
-                <div className="package-selection"><div className="selection-heading"><h3>Paquetes disponibles</h3><span>{selectedPackages.length} seleccionados · {selectedWeight.toFixed(2)} kg</span></div>
+                 <div className="package-selection"><div className="selection-heading"><h3>Paquetes disponibles</h3><span>{selectedPackages.length} seleccionados · {selectedWeight.toFixed(2)} kg</span></div><p className="form-hint">Solo aparecen paquetes con coordenadas válidas en México para evitar rutas incorrectas.</p>
                     {isLoading ? <p className="form-hint">Cargando paquetes...</p> : options.paquetesDisponibles.length === 0 ? <EmptyState title="No hay paquetes disponibles" description="Los paquetes asignados a una ruta activa no aparecen aquí." /> : <div className="package-check-list">{options.paquetesDisponibles.map((item) => <label className="package-check" key={item.idPaquete}><input type="checkbox" checked={selectedPackages.includes(item.idPaquete)} onChange={() => togglePackage(item.idPaquete)} /><span><strong>{item.folio}{item.esPrioritario ? ' · Prioritario' : ''}</strong><small>{item.direccionDestino} · {item.pesoKg} kg</small></span></label>)}</div>}
                 </div>
                 <div className="form-actions"><button className="primary-button" disabled={isSaving || options.unidades.length === 0 || selectedPackages.length === 0} type="submit">{isSaving ? 'Guardando...' : 'Asignar ruta'}</button></div>

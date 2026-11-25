@@ -45,7 +45,7 @@ public sealed class AuthController(AuthDb authDb) : ControllerBase
         return Ok(user);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     [HttpGet("me")]
     public ActionResult<AuthUserResponse> Me()
         => Ok(new AuthUserResponse(

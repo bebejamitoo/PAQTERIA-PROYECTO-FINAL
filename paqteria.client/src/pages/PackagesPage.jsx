@@ -148,6 +148,14 @@ function PackagesPage() {
         setIsSaving(true);
         setMessage(null);
         try {
+            const coordinateParts = form.coordenadasDestino.split(',').map((part) => Number(part.trim()));
+            if (coordinateParts.length !== 2
+                || !coordinateParts.every(Number.isFinite)
+                || coordinateParts[0] < 14 || coordinateParts[0] > 33.5
+                || coordinateParts[1] < -118.5 || coordinateParts[1] > -86.5) {
+                throw new Error('Las coordenadas deben estar en México y usar el formato latitud, longitud; por ejemplo: 29.0729,-110.9559.');
+            }
+
             const response = await fetch('/api/packages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

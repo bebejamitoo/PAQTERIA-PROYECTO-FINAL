@@ -2,7 +2,9 @@
 .app-shell { display: flex; min-height: 100vh; background: #f4f6f9; }
 .sidebar { width: 250px; flex: 0 0 250px; padding: 34px 16px; color: #c1cce0; background: #0f1d38; }
 .brand-block { padding: 0 14px 38px; }
-.brand-name { display: block; color: #fff; font-size: 23px; font-weight: 750; letter-spacing: -.6px; }
+.brand-logo { display: block; height: auto; object-fit: contain; }
+.sidebar-logo { width: 218px; padding: 5px; border-radius: 8px; background: #fff; }
+.login-logo { width: 180px; margin: 0 auto; }
 .brand-caption, .nav-section-label { display: block; margin-top: 8px; color: #9aaccb; font-size: 9px; letter-spacing: .5px; }
 .nav-section-label { margin: 0 14px 18px; }
 .sidebar-nav { display: grid; gap: 8px; }
@@ -20,6 +22,10 @@
 .map-route-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 22px; }
 .map-route-card { min-width: 0; }
 .map-route-metrics { display: flex; gap: 18px; color: #0e9e64; font-size: 13px; font-weight: 700; }
+.driver-location { display: grid; gap: 4px; padding: 10px 12px; border-radius: 8px; font-size: 12px; }
+.driver-location span { font-size: 11px; }
+.driver-location.live { color: #087c4c; background: #e0f7eb; }
+.driver-location.stale, .driver-location.waiting { color: #8a5b00; background: #fff4d6; }
 .page-header { display: flex; align-items: center; justify-content: space-between; min-height: 102px; padding: 25px 34px; background: #fff; }
 h1, h2, p { margin: 0; }
 h1 { color: #14213d; font-size: 22px; line-height: 1.2; letter-spacing: -.5px; }

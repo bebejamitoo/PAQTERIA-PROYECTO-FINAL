@@ -45,7 +45,8 @@ public sealed record RouteMonitoringItem(
     IReadOnlyList<RouteStopItem> Paradas,
     string? Geometria,
     double? DistanciaMetros,
-    double? DuracionSegundos);
+    double? DuracionSegundos,
+    MobileLastLocationResponse? UltimaUbicacion);
 
 public sealed record RouteStopItem(
     int IdParada,

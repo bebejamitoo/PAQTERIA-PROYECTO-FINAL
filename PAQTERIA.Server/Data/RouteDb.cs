@@ -4,7 +4,7 @@ using PAQTERIA.Server.Models;
 
 namespace PAQTERIA.Server.Data;
 
-public sealed class RouteDb(IConfiguration configuration, OsrmClient osrmClient)
+public sealed class RouteDb(IConfiguration configuration, OsrmClient osrmClient, NotificacionDb notificacionDb)
 {
     private readonly string _connectionString = configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("No se configuró ConnectionStrings:DefaultConnection.");
@@ -104,10 +104,20 @@ public sealed class RouteDb(IConfiguration configuration, OsrmClient osrmClient)
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             while (await reader.ReadAsync(cancellationToken))
             {
+                RouteCoordinate coordinate;
+                try
+                {
+                    coordinate = ParseCoordinate(reader.GetString(5));
+                }
+                catch (InvalidOperationException)
+                {
+                    continue;
+                }
+
                 packages.Add(new RoutePackageOption(
                     reader.GetInt32(0), reader.GetString(1), reader.GetString(2),
-                    reader.GetBoolean(3), reader.GetDecimal(4), ParseCoordinate(reader.GetString(5)).Latitude,
-                    ParseCoordinate(reader.GetString(5)).Longitude));
+                    reader.GetBoolean(3), reader.GetDecimal(4), coordinate.Latitude,
+                    coordinate.Longitude));
             }
         }
 
@@ -132,7 +142,9 @@ public sealed class RouteDb(IConfiguration configuration, OsrmClient osrmClient)
                        COALESCE(p.total_paquetes, 0) AS total_paquetes,
                        COALESCE(p.pendientes, 0) AS pendientes,
                        COALESCE(i.incidencias, 0) AS incidencias,
-                       tr.geometria_geojson, tr.distancia_metros, tr.duracion_segundos
+                       tr.geometria_geojson, tr.distancia_metros, tr.duracion_segundos,
+                       posicion.latitud, posicion.longitud, posicion.precision_metros,
+                       posicion.velocidad_kmh, posicion.rumbo_grados, posicion.fecha_hora_utc
                 FROM dbo.TURNOS_REPARTIDOR tr
                 LEFT JOIN dbo.USUARIOS u ON u.id_usuario = tr.id_repartidor
                 LEFT JOIN dbo.UNIDADES un ON un.id_unidad = tr.id_unidad
@@ -154,6 +166,14 @@ public sealed class RouteDb(IConfiguration configuration, OsrmClient osrmClient)
                     LEFT JOIN dbo.INCIDENCIAS_ENTREGA ie ON ie.id_paquete = pr.id_paquete
                     GROUP BY pr.id_turno
                 ) i ON i.id_turno = tr.id_turno
+                OUTER APPLY
+                (
+                    SELECT TOP (1) pos.latitud, pos.longitud, pos.precision_metros,
+                           pos.velocidad_kmh, pos.rumbo_grados, pos.fecha_hora_utc
+                    FROM dbo.POSICIONES_REPARTIDOR pos
+                    WHERE pos.id_turno = tr.id_turno
+                    ORDER BY pos.fecha_hora_utc DESC, pos.id_posicion DESC
+                ) posicion
                 ORDER BY tr.fecha_turno DESC, tr.id_turno DESC;
                 """;
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -165,7 +185,15 @@ public sealed class RouteDb(IConfiguration configuration, OsrmClient osrmClient)
                         reader.GetInt32(6), reader.GetInt32(7), Array.Empty<RouteStopItem>(),
                         reader.IsDBNull(8) ? null : reader.GetString(8),
                         reader.IsDBNull(9) ? null : reader.GetDouble(9),
-                        reader.IsDBNull(10) ? null : reader.GetDouble(10));
+                        reader.IsDBNull(10) ? null : reader.GetDouble(10),
+                        reader.IsDBNull(11)
+                            ? null
+                            : new MobileLastLocationResponse(
+                                reader.GetDouble(11), reader.GetDouble(12),
+                                reader.IsDBNull(13) ? null : reader.GetDouble(13),
+                                reader.IsDBNull(14) ? null : reader.GetDouble(14),
+                                reader.IsDBNull(15) ? null : reader.GetDouble(15),
+                                DateTime.SpecifyKind(reader.GetDateTime(16), DateTimeKind.Utc)));
 
                 turns.Add(item);
                 totalPackages += item.TotalPaquetes;
@@ -338,6 +366,12 @@ public sealed class RouteDb(IConfiguration configuration, OsrmClient osrmClient)
                 }, cancellationToken);
             }
 
+            await notificacionDb.CrearAsync(
+                connection, transaction, request.IdRepartidor!.Value,
+                "Ruta asignada para hoy",
+                $"Tienes {request.IdPaquetes.Count} paquetes asignados en tu ruta de hoy.",
+                "ruta_asignada", null, cancellationToken);
+
             await transaction.CommitAsync(cancellationToken);
             return idTurno;
         }
@@ -432,9 +466,9 @@ public sealed class RouteDb(IConfiguration configuration, OsrmClient osrmClient)
         if (parts.Length != 2
             || !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var latitude)
             || !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var longitude)
-            || latitude is < -90 or > 90 || longitude is < -180 or > 180)
+            || latitude is < 14 or > 33.5 || longitude is < -118.5 or > -86.5)
         {
-            throw new InvalidOperationException("Una coordenada de destino no tiene el formato latitud, longitud.");
+            throw new InvalidOperationException("Una coordenada de destino no es válida para México. Usa el formato latitud, longitud; por ejemplo: 29.0729,-110.9559.");
         }
         return new RouteCoordinate(latitude, longitude);
     }

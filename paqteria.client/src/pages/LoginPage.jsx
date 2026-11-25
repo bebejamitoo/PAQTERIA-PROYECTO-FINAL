@@ -32,8 +32,7 @@ function LoginPage({ onLogin }) {
         <main className="login-shell">
             <section className="login-card">
                 <div className="brand-block login-brand">
-                    <span className="brand-name">RumboEnvíos</span>
-                    <span className="brand-caption">CONTROL TOWER</span>
+                    <img className="brand-logo login-logo" src="/logo.png" alt="PaqTracker" />
                 </div>
                 <div className="login-heading">
                     <h1>Acceso administrativo</h1>

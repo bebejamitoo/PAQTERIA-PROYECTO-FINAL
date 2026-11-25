@@ -44,5 +44,9 @@ public sealed class RoutesController(RouteDb routeDb) : ControllerBase
         {
             return BadRequest(new { message = "Uno de los identificadores relacionados no existe." });
         }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
     }
 }

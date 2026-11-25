@@ -6,6 +6,8 @@ node_modules/
 **/node_modules/
 **/bin/
 **/obj/
+**/dist/
+PAQTERIA.Server/wwwroot/uploads/
 *.db
 *.db-shm
 *.db-wal

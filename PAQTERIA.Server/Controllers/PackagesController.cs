@@ -25,7 +25,7 @@ public sealed class PackagesController(PackageDb packageDb) : ControllerBase
         [FromBody] CreatePackageRequest request,
         CancellationToken cancellationToken)
     {
-        var validationError = Validate(request);
+        var validationError = PackageRequestValidation.Validate(request);
         if (validationError is not null)
         {
             return BadRequest(new { message = validationError });
@@ -69,18 +69,6 @@ public sealed class PackagesController(PackageDb packageDb) : ControllerBase
         return package is null
             ? NotFound(new { message = "No existe un paquete con ese folio." })
             : Ok(ToResponse(package));
-    }
-
-    private static string? Validate(CreatePackageRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Folio)) return "El folio es obligatorio.";
-        if (request.IdCentroOrigen is null or <= 0) return "El centro de origen debe ser un identificador válido.";
-        if (string.IsNullOrWhiteSpace(request.DireccionOrigen)) return "La dirección de origen es obligatoria.";
-        if (string.IsNullOrWhiteSpace(request.DireccionDestino)) return "La dirección de destino es obligatoria.";
-        if (string.IsNullOrWhiteSpace(request.CoordenadasDestino)) return "Las coordenadas de destino son obligatorias.";
-        if (request.PesoKg is null or <= 0) return "El peso debe ser mayor que cero.";
-        if (string.IsNullOrWhiteSpace(request.TamanoEtiqueta)) return "El tamaño de etiqueta es obligatorio.";
-        return null;
     }
 
     private static PackageResponse ToResponse(Package package) => new(
